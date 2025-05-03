@@ -1,0 +1,269 @@
+.pageWrapper {
+  min-height: 100vh;
+  background-color: #f4f4f4;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.headerContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.backLink {
+  display: flex;
+  align-items: center;
+  color: #4a90e2;
+  text-decoration: none;
+}
+
+.backLink:hover {
+  color: #3a80d2;
+}
+
+.backIcon {
+  margin-right: 0.5rem;
+}
+
+.mainContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  flex: 1;
+}
+
+.cardWrapper {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.imageWrapper {
+  position: relative;
+  height: 300px;
+}
+
+.trendImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.trendType {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  padding: 0.25rem 0.75rem;
+  color: white;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+}
+
+.post {
+  background-color: #10b981;
+}
+
+.video {
+  background-color: #8b5cf6;
+}
+
+.tiktok {
+  background-color: #f67280;
+}
+
+.trendContent {
+  padding: 2rem;
+}
+
+.trendTitle {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.hashtags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.hashtag {
+  background-color: #e6f0ff;
+  color: #4a90e2;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+}
+
+.infoRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  color: #555;
+  margin-bottom: 1.5rem;
+}
+
+.fullDescription {
+  color: #333;
+  font-size: 1.125rem;
+  margin-bottom: 2rem;
+}
+
+.tabsWrapper {
+  border-top: 1px solid #ddd;
+  padding-top: 1rem;
+}
+
+.tabLabels {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-bottom: 1rem;
+}
+
+.tabLabels label {
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  text-align: center;
+  font-weight: bold;
+  color: #333;
+  background-color: #f0f4ff;
+  border-radius: 0.375rem 0.375rem 0 0;
+}
+
+.tabContent {
+  background-color: #f0f4ff;
+  padding: 1rem;
+  border-radius: 0 0 0.5rem 0.5rem;
+  color: #555;
+}
+
+.tabPanel {
+  display: none;
+}
+
+input[type="radio"]:nth-of-type(1):checked
+  ~ .tabContent
+  > .tabPanel:nth-of-type(1),
+input[type="radio"]:nth-of-type(2):checked
+  ~ .tabContent
+  > .tabPanel:nth-of-type(2),
+input[type="radio"]:nth-of-type(3):checked
+  ~ .tabContent
+  > .tabPanel:nth-of-type(3),
+input[type="radio"]:nth-of-type(4):checked
+  ~ .tabContent
+  > .tabPanel:nth-of-type(4) {
+  display: block;
+}
+
+.ctaRow {
+  display: flex;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.saveButton,
+.shareButton {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  font-weight: bold;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+}
+
+.saveButton {
+  background-color: #4a90e2;
+  color: white;
+}
+
+.saveButton:hover {
+  background-color: #3a80d2;
+}
+
+.shareButton {
+  border: 1px solid #333;
+  color: #333;
+  background-color: white;
+}
+
+.shareButton:hover {
+  background-color: #f0f0f0;
+}
+
+.similarSection {
+  margin-top: 3rem;
+}
+
+.similarGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.similarCard {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 0.2s;
+}
+
+.similarCard:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.similarCard img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+.similarCard h3 {
+  font-size: 1.125rem;
+  margin: 0.75rem 0 0.5rem 0;
+  color: #333;
+}
+
+.footer {
+  background-color: white;
+  border-top: 1px solid #e5e5e5;
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #555;
+  font-size: 1rem;
+}
+
+.footer div {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 0.75rem;
+}
+
+.footer a {
+  color: #4a90e2;
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}

@@ -1,0 +1,43 @@
+.wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.active {
+  background-color: #4a90e2;
+  color: white;
+}
+
+.active:hover {
+  background-color: #3a80d2;
+}
+
+.inactive {
+  background-color: transparent;
+  color: #333;
+  border-color: #ccc;
+}
+
+.inactive:hover {
+  color: #4a90e2;
+  border-color: #4a90e2;
+}

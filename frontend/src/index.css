@@ -1,0 +1,60 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+
+html {
+  font-size: 16px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "PT Sans", sans-serif;
+  overflow-x: hidden;
+}
+
+.link {
+  color: black;
+  font-size: 20px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.link:hover {
+  color: #0f766e;
+}
+
+.mainButton {
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 1.2rem;
+  background-color: #0d9488;
+  text-decoration: none;
+  transition: background-color 0.3s;
+}
+
+.mainButton:hover {
+  background-color: #0f766e;
+}
+
+.secondaryButton {
+  padding: 0.75rem 2rem;
+  border: 1px solid #0d9488;
+  border-radius: 10px;
+  color: #0d9488;
+  font-size: 1.2rem;
+  text-decoration: none;
+  transition: background-color, color 0.3s;
+}
+
+.secondaryButton:hover {
+  background-color: #f0fdfa;
+  color: black;
+}
+
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+}

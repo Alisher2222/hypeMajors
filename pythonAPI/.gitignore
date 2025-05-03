@@ -1,0 +1,41 @@
+# Виртуальное окружение
+venv/
+env/
+.venv/
+
+# Кеши Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Файлы логов
+*.log
+
+# Секреты
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Тестовые файлы
+coverage/
+pytest_cache/
+.tox/
+
+# Бинарники
+*.so
+*.dll
+*.exe
+*.out
+*.app
+*.bin
+
+# Mac и system
+.DS_Store
+Thumbs.db
