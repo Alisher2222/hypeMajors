@@ -25,11 +25,13 @@ export default function SignIn() {
     }
 
     try {
-      await dispatch(login(user)).unwrap();
+      const result = await dispatch(login(user)).unwrap();
+      const userId = result.user.id;
+
       setTimeout(() => {
-        dispatch(fetchUserBusinesses({ userId })).unwrap();
+        dispatch(fetchUserBusinesses({ userId }));
         navigate("/");
-      }, 1000);
+      }, 300);
     } catch (err) {
       alert(err?.message || "Login failed");
     }

@@ -65,10 +65,11 @@ export const createBusiness = async (req, res) => {
 
 export const getBusiness = async (req, res) => {
   try {
-    const { businessId } = req.params;
+    const { userId } = req.params;
+    console.log(userId);
     const [businessRows] = await pool.query(
-      "SELECT * FROM businesses WHERE id = ?",
-      [businessId]
+      "SELECT * FROM businesses WHERE user_id = ?",
+      [userId]
     );
 
     if (businessRows.length === 0) {

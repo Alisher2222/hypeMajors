@@ -16,7 +16,6 @@ import Navbar from "../../components/navbar/navbar";
 import styles from "./profile.module.css";
 import { useDispatch, useSelector } from "react-redux";
 import { scheduleEmail } from "../../store/notification.slice";
-import { fetchUserBusinesses } from "../../store/businessForm.slice";
 
 export default function Profile() {
   const [interval, setInterval] = useState(0);
@@ -40,12 +39,6 @@ export default function Profile() {
       brandTone: "",
     },
   });
-
-  useEffect(() => {
-    if (personal.id) {
-      dispatch(fetchUserBusinesses({ userId: personal.id }));
-    }
-  }, [personal]);
 
   useEffect(() => {
     if (personal && business) {

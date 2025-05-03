@@ -33,7 +33,7 @@ export const fetchUserBusinesses = createAsyncThunk(
       const response = await API.get(`/business/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return response.data.businesses;
+      return response.data;
     } catch (error) {
       return rejectWithValue(
         error.response?.data || { error: "Failed to load businesses" }
@@ -131,7 +131,15 @@ const businessSlice = createSlice({
       })
       .addCase(fetchUserBusinesses.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.businesses = action.payload;
+        console.log(action.payload);
+        const business = action.payload.business;
+        state.businessName = business.business_name;
+        state.industry = business.industry;
+        state.instagramHashtag = business.instagram_hashtag;
+        state.targetAudience = business.target_audience;
+        state.marketingGoal = business.marketing_goal;
+        state.brandTone = business.brand_tone;
+        state.businesses.push(business);
       })
       .addCase(fetchUserBusinesses.rejected, (state, action) => {
         state.status = "failed";
