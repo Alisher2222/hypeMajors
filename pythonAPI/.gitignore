@@ -4,7 +4,7 @@ env/
 .venv/
 
 # Кеши Python
-__pycache__/
+_pycache_/
 *.py[cod]
 *.pyo
 *.pyd
@@ -28,7 +28,7 @@ coverage/
 pytest_cache/
 .tox/
 
-# Бинарники
+# БинарникиQ
 *.so
 *.dll
 *.exe
