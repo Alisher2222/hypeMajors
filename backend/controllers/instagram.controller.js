@@ -1,4 +1,4 @@
-import fetch from "node-fetch";
+import axios from "axios";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -7,16 +7,16 @@ export const analyzeInstagram = async (req, res) => {
 
   try {
     const runInput = { usernames: [username] };
-    const response = await fetch(
+
+    const response = await axios.post(
       `https://api.apify.com/v2/acts/apify~instagram-profile-scraper/run-sync-get-dataset-items?token=${process.env.APIFY_TOKEN}`,
+      runInput,
       {
-        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(runInput),
       }
     );
 
-    const data = await response.json();
+    const data = response.data;
     const posts = data[0]?.latestPosts?.slice(0, 10).reverse() || [];
 
     const chartData = posts.map((post) => {
@@ -37,6 +37,7 @@ export const analyzeInstagram = async (req, res) => {
       (top, post) => (post.likesCount > (top.likesCount || 0) ? post : top),
       {}
     );
+
     const trendDirection =
       chartData[chartData.length - 1].likes > chartData[0].likes
         ? "rising"
