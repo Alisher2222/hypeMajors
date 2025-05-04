@@ -49,13 +49,14 @@ export default function App() {
           }
         />
         <Route
-          path="/progress"
-          element={
-            <ProtectedRoute>
-              <ProgressPage />
-            </ProtectedRoute>
-          }
-        />
+  path="/progressPage"
+  element={
+    <ProtectedRoute>
+      <ProgressPage />
+    </ProtectedRoute>
+  }
+/>
+
       </Routes>
     </BrowserRouter>
   );

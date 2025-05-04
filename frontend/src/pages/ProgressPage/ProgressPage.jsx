@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { Instagram } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import styles from "./ProgressPage.module.css";
 import Navbar from "../../components/navbar/navbar";
 import {
@@ -12,44 +13,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// ====== Fetch Functions ======
-async function fetchInstagramData(username, setChartData, setAnalysis, setError) {
-  try {
-    const response = await fetch("http://localhost:5000/api/instagram/analyze", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username }),
-    });
-
-    const { chartData, analysis } = await response.json();
-    setChartData(chartData);
-    setAnalysis(analysis);
-  } catch (err) {
-    console.error(err);
-    setError("Failed to load Instagram data.");
-  }
-}
-
-async function fetchTikTokData(username, setChartData, setError) {
-  try {
-    const response = await fetch("http://localhost:5000/api/tiktok/analyze", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username }),
-    });
-
-    const { chartData } = await response.json();
-    setChartData(chartData);
-  } catch (err) {
-    console.error(err);
-    setError("Failed to load TikTok data.");
-  }
-}
-
-// ====== Chart Components ======
 function InstagramChart({ username, data }) {
-  if (!data.length) return null;
-
+  if (!data || !data.length) return null;
   return (
     <div className={styles.card}>
       <div className={styles.cardHeader}>
@@ -72,8 +37,7 @@ function InstagramChart({ username, data }) {
 }
 
 function TikTokChart({ username, data }) {
-  if (!Array.isArray(data) || data.length === 0) return null;
-
+  if (!data || !data.length) return null;
   return (
     <div className={styles.card}>
       <div className={styles.cardHeader}>
@@ -95,159 +59,115 @@ function TikTokChart({ username, data }) {
   );
 }
 
-// ====== Instagram Analysis Summary ======
 function AnalysisCard({ analysis }) {
   if (!analysis) return null;
-
   return (
     <div className={styles.card}>
       <h3 className={styles.cardHeader}>Trend Analysis</h3>
       <p>📊 Average Likes: <strong>{analysis.averageLikes}</strong></p>
-      <p>🔥 Best Post: <a href={analysis.bestPostUrl} target="_blank" rel="noopener noreferrer">{analysis.bestPostUrl}</a> ({analysis.bestPostLikes} likes)</p>
+      <p>
+        🔥 Best Post:{" "}
+        <a href={analysis.bestPostUrl} target="_blank" rel="noopener noreferrer">
+          {analysis.bestPostUrl}
+        </a>{" "}
+        ({analysis.bestPostLikes} likes)
+      </p>
       <p>📈 Trend Summary: {analysis.trendSummary}</p>
     </div>
   );
 }
 
-// ====== Instagram Analytics ======
-function InstagramAnalytics() {
-  const [username, setUsername] = useState("");
-  const [chartData, setChartData] = useState([]);
-  const [analysis, setAnalysis] = useState(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [showChart, setShowChart] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setError("");
-
-    if (!username.trim()) {
-      setError("Please enter an Instagram username");
-      return;
-    }
-
-    setIsAnalyzing(true);
-    fetchInstagramData(username.trim(), setChartData, setAnalysis, setError);
-    setTimeout(() => {
-      setIsAnalyzing(false);
-      setShowChart(true);
-    }, 2000);
-  };
-
-  return (
-    <div className={styles.analyticsWrapper}>
-      <div className={styles.card}>
-        <div className={styles.cardHeader}>
-          <h2 className={styles.title}>
-            <Instagram className={styles.icon} /> Track your Instagram progress
-          </h2>
-          <p className={styles.description}>
-            Enter your Instagram username to analyze your growth and engagement metrics
-          </p>
-        </div>
-        <div className={styles.cardContent}>
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <input
-              type="text"
-              placeholder="yourusername"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className={styles.input}
-            />
-            <button
-              type="submit"
-              disabled={isAnalyzing}
-              className={styles.button}
-            >
-              {isAnalyzing ? "Analyzing..." : "Analyze"}
-            </button>
-          </form>
-          {error && <div className={styles.error}>{error}</div>}
-        </div>
-      </div>
-
-      {showChart && (
-        <>
-          <InstagramChart username={username} data={chartData} />
-          <AnalysisCard analysis={analysis} />
-        </>
-      )}
-    </div>
-  );
-}
-
-// ====== TikTok Analytics ======
-function TikTokAnalytics() {
-  const [username, setUsername] = useState("");
-  const [chartData, setChartData] = useState([]);
-  const [showChart, setShowChart] = useState(false);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setError("");
-
-    if (!username.trim()) {
-      setError("Please enter a TikTok username");
-      return;
-    }
-
-    const cleanUsername = username.replace("@", "").trim();
-    console.log("TikTok username:", cleanUsername);
-
-    setIsAnalyzing(true);
-    fetchTikTokData(cleanUsername, setChartData, setError);
-    setTimeout(() => {
-      setIsAnalyzing(false);
-      setShowChart(true);
-    }, 2000);
-  };
-
-  return (
-    <div className={styles.analyticsWrapper}>
-      <div className={styles.card}>
-        <div className={styles.cardHeader}>
-          <h2 className={styles.title}>📱 TikTok Analyzer</h2>
-          <p className={styles.description}>
-            Enter your TikTok username to see the latest 10 video likes
-          </p>
-        </div>
-        <div className={styles.cardContent}>
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <input
-              type="text"
-              placeholder="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className={styles.input}
-            />
-            <button
-              type="submit"
-              disabled={isAnalyzing}
-              className={styles.button}
-            >
-              {isAnalyzing ? "Analyzing..." : "Analyze"}
-            </button>
-          </form>
-          {error && <div className={styles.error}>{error}</div>}
-        </div>
-      </div>
-
-      {showChart && <TikTokChart username={username} data={chartData} />}
-    </div>
-  );
-}
-
-// ====== Main Export ======
 export default function ProgressPage() {
+  const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
+  const [instagramUsername, setInstagramUsername] = useState("");
+  const [tiktokUsername, setTikTokUsername] = useState("");
+  const [igData, setIgData] = useState([]);
+  const [igAnalysis, setIgAnalysis] = useState(null);
+  const [ttData, setTtData] = useState([]);
+  const [error, setError] = useState("");
+  const [showContinue, setShowContinue] = useState(false);
+
+  useEffect(() => {
+    async function fetchBusinessUsernames() {
+      try {
+        console.log("user.id:", user.id); // 👈 this should be just a number like 8
+
+        const res = await fetch(`http://localhost:5000/business/${user.id}`, {
+  headers: {
+    Authorization: `Bearer ${user.token}`,
+  },
+});
+
+        const data = await res.json();
+        const business = data.business;
+
+        const igUser = business.instagram_username?.trim();
+        const ttUser = business.tiktok_username?.trim();
+
+        setInstagramUsername(business.instagram_username);
+setTikTokUsername(business.tiktok_username);
+setError(""); // ✅ clear error message
+
+
+        await fetchInstagramData(igUser);
+        await fetchTikTokData(ttUser);
+
+        setShowContinue(true);
+      } catch (err) {
+        console.error(err);
+        setError("Could not load business data.");
+      }
+    }
+
+    fetchBusinessUsernames();
+  }, [user.id, navigate]);
+
+  async function fetchInstagramData(username) {
+    try {
+      const response = await fetch("http://localhost:5000/api/instagram/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username }),
+      });
+      const { chartData, analysis } = await response.json();
+      setIgData(chartData);
+      setIgAnalysis(analysis);
+    } catch (err) {
+      console.error(err);
+      setError("Instagram fetch failed.");
+    }
+  }
+
+  async function fetchTikTokData(username) {
+    try {
+      const response = await fetch("http://localhost:5000/api/tiktok/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username }),
+      });
+      const { chartData } = await response.json();
+      setTtData(chartData);
+    } catch (err) {
+      console.error(err);
+      setError("TikTok fetch failed.");
+    }
+  }
+
   return (
     <>
       <Navbar />
       <div className={styles.container}>
-        <InstagramAnalytics />
-        <TikTokAnalytics />
+        <h2>Analyzing your accounts...</h2>
+        {error && <div className={styles.error}>{error}</div>}
+        <InstagramChart username={instagramUsername} data={igData} />
+        <AnalysisCard analysis={igAnalysis} />
+        <TikTokChart username={tiktokUsername} data={ttData} />
+        {showContinue && (
+          <button className={styles.button} onClick={() => navigate("/suggestionsPage")}>
+            Continue to Suggestions →
+          </button>
+        )}
       </div>
     </>
   );

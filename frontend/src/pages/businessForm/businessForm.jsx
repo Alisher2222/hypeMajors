@@ -41,7 +41,9 @@ tiktokUsername: ""
       return;
     }
     dispatch(submitBusinessForm(formData));
-    navigate("/suggestionsPage");
+    //navigate("/suggestionsPage");
+    navigate("/progressPage");
+
   };
 
   return (
