@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { Instagram } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import styles from "./ProgressPage.module.css";
 import Navbar from "../../components/navbar/navbar";
 import {
@@ -12,28 +13,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// ========== Fetching Instagram Data ==========
-async function fetchInstagramData(username, setChartData, setAnalysis, setError) {
-  try {
-    const response = await fetch("http://localhost:5000/api/instagram/analyze", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username }),
-    });
-
-    const { chartData, analysis } = await response.json();
-    setChartData(chartData);
-    setAnalysis(analysis);
-  } catch (err) {
-    console.error(err);
-    setError("Failed to load Instagram data.");
-  }
-}
-
-// ========== Chart Component ==========
 function InstagramChart({ username, data }) {
-  if (!data.length) return null;
-
+  if (!data || !data.length) return null;
   return (
     <div className={styles.card}>
       <div className={styles.cardHeader}>
@@ -55,103 +36,138 @@ function InstagramChart({ username, data }) {
   );
 }
 
-// ========== Analysis Summary Card ==========
+function TikTokChart({ username, data }) {
+  if (!data || !data.length) return null;
+  return (
+    <div className={styles.card}>
+      <div className={styles.cardHeader}>
+        <h3>TikTok Likes for @{username}</h3>
+        <p>Based on the latest 10 videos</p>
+      </div>
+      <div className={styles.chartWrapper}>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis />
+            <Tooltip />
+            <Line type="monotone" dataKey="likes" stroke="#6366f1" />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
 function AnalysisCard({ analysis }) {
   if (!analysis) return null;
-
   return (
     <div className={styles.card}>
       <h3 className={styles.cardHeader}>Trend Analysis</h3>
       <p>📊 Average Likes: <strong>{analysis.averageLikes}</strong></p>
-      <p>🔥 Best Post: <a href={analysis.bestPostUrl} target="_blank" rel="noopener noreferrer">{analysis.bestPostUrl}</a> ({analysis.bestPostLikes} likes)</p>
+      <p>
+        🔥 Best Post:{" "}
+        <a href={analysis.bestPostUrl} target="_blank" rel="noopener noreferrer">
+          {analysis.bestPostUrl}
+        </a>{" "}
+        ({analysis.bestPostLikes} likes)
+      </p>
       <p>📈 Trend Summary: {analysis.trendSummary}</p>
     </div>
   );
 }
 
-// ========== Main Analytics Component ==========
-function InstagramAnalytics() {
-  const [chartData, setChartData] = useState([]);
-  const [analysis, setAnalysis] = useState(null);
-  const [instagramUrl, setInstagramUrl] = useState("");
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [showChart, setShowChart] = useState(false);
+export default function ProgressPage() {
+  const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
+  const [instagramUsername, setInstagramUsername] = useState("");
+  const [tiktokUsername, setTikTokUsername] = useState("");
+  const [igData, setIgData] = useState([]);
+  const [igAnalysis, setIgAnalysis] = useState(null);
+  const [ttData, setTtData] = useState([]);
   const [error, setError] = useState("");
+  const [showContinue, setShowContinue] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setError("");
+  useEffect(() => {
+    async function fetchBusinessUsernames() {
+      try {
+        console.log("user.id:", user.id); // 👈 this should be just a number like 8
 
-    if (!instagramUrl.startsWith("https://www.instagram.com/")) {
-      setError("URL must begin with https://www.instagram.com/");
-      return;
+        const res = await fetch(`http://localhost:5000/business/${user.id}`, {
+  headers: {
+    Authorization: `Bearer ${user.token}`,
+  },
+});
+
+        const data = await res.json();
+        const business = data.business;
+
+        const igUser = business.instagram_username?.trim();
+        const ttUser = business.tiktok_username?.trim();
+
+        setInstagramUsername(business.instagram_username);
+setTikTokUsername(business.tiktok_username);
+setError(""); // ✅ clear error message
+
+
+        await fetchInstagramData(igUser);
+        await fetchTikTokData(ttUser);
+
+        setShowContinue(true);
+      } catch (err) {
+        console.error(err);
+        setError("Could not load business data.");
+      }
     }
 
-    setIsAnalyzing(true);
-    fetchInstagramData(
-      instagramUrl.split("/").filter(Boolean).pop(),
-      setChartData,
-      setAnalysis,
-      setError
-    );
-    setTimeout(() => {
-      setIsAnalyzing(false);
-      setShowChart(true);
-    }, 2000);
-  };
+    fetchBusinessUsernames();
+  }, [user.id, navigate]);
 
-  return (
-    <div className={styles.analyticsWrapper}>
-      <div className={styles.card}>
-        <div className={styles.cardHeader}>
-          <h2 className={styles.title}>
-            <Instagram className={styles.icon} /> Track your Instagram progress
-          </h2>
-          <p className={styles.description}>
-            Enter your Instagram profile URL to analyze your growth and engagement metrics
-          </p>
-        </div>
-        <div className={styles.cardContent}>
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <input
-              type="text"
-              placeholder="https://www.instagram.com/yourusername"
-              value={instagramUrl}
-              onChange={(e) => setInstagramUrl(e.target.value)}
-              className={styles.input}
-            />
-            <button
-              type="submit"
-              disabled={isAnalyzing}
-              className={styles.button}
-            >
-              {isAnalyzing ? "Analyzing..." : "Analyze"}
-            </button>
-          </form>
-          {error && <div className={styles.error}>{error}</div>}
-        </div>
-      </div>
+  async function fetchInstagramData(username) {
+    try {
+      const response = await fetch("http://localhost:5000/api/instagram/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username }),
+      });
+      const { chartData, analysis } = await response.json();
+      setIgData(chartData);
+      setIgAnalysis(analysis);
+    } catch (err) {
+      console.error(err);
+      setError("Instagram fetch failed.");
+    }
+  }
 
-      {showChart && (
-        <>
-          <InstagramChart
-            username={instagramUrl.split("/").filter(Boolean).pop() || ""}
-            data={chartData}
-          />
-          <AnalysisCard analysis={analysis} />
-        </>
-      )}
-    </div>
-  );
-}
+  async function fetchTikTokData(username) {
+    try {
+      const response = await fetch("http://localhost:5000/api/tiktok/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username }),
+      });
+      const { chartData } = await response.json();
+      setTtData(chartData);
+    } catch (err) {
+      console.error(err);
+      setError("TikTok fetch failed.");
+    }
+  }
 
-// ========== Page Wrapper ==========
-export default function ProgressPage() {
   return (
     <>
       <Navbar />
       <div className={styles.container}>
-        <InstagramAnalytics />
+        <h2>Analyzing your accounts...</h2>
+        {error && <div className={styles.error}>{error}</div>}
+        <InstagramChart username={instagramUsername} data={igData} />
+        <AnalysisCard analysis={igAnalysis} />
+        <TikTokChart username={tiktokUsername} data={ttData} />
+        {showContinue && (
+          <button className={styles.button} onClick={() => navigate("/suggestionsPage")}>
+            Continue to Suggestions →
+          </button>
+        )}
       </div>
     </>
   );

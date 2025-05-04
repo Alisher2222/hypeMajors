@@ -10,6 +10,8 @@ export const createBusiness = async (req, res) => {
       targetAudience: target_audience,
       marketingGoal: marketing_goal,
       brandTone: brand_tone,
+      instagramUsername: instagram_username,  // ✅ new
+      tiktokUsername: tiktok_username         // ✅ new
     } = req.body;
 
     if (
@@ -35,7 +37,11 @@ export const createBusiness = async (req, res) => {
     }
 
     const [result] = await pool.query(
-      "INSERT INTO businesses (business_name, industry, instagram_hashtag, target_audience, marketing_goal, brand_tone, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      `INSERT INTO businesses (
+        business_name, industry, instagram_hashtag,
+        target_audience, marketing_goal, brand_tone,
+        instagram_username, tiktok_username, user_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         business_name,
         industry,
@@ -43,7 +49,9 @@ export const createBusiness = async (req, res) => {
         target_audience,
         marketing_goal,
         brand_tone,
-        user_id,
+        instagram_username,
+        tiktok_username,
+        user_id
       ]
     );
 
