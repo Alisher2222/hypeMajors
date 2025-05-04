@@ -2,31 +2,60 @@ from pydantic import BaseModel
 from typing import List
 import re
 import json
-from apify_client import ApifyClient
-import openai
-from fastapi import FastAPI, Query
-from dotenv import load_dotenv
+import time
+import jwt
 import os
-
-
+import requests
+from fastapi import FastAPI
+from apify_client import ApifyClient
+from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()
-APIFY_TOKEN = os.getenv("APIFY_TOKEN")
+
+APIFY_TOKEN = "apify_api_vWworj0dsklNh13dqW95trg0hygzEf4paSZk"
 OPENAI_KEY = os.getenv("OPENAI_KEY")
-openai.api_key = OPENAI_KEY
-print("🔐 Используемый APIFY_TOKEN:", APIFY_TOKEN)
+KLING_AK = os.getenv("KLING_AK")
+KLING_SK = os.getenv("KLING_SK")
 
 
+
+client = OpenAI(api_key=OPENAI_KEY)
 app = FastAPI()
 
 
-# Request model
+class Image2VideoRequest(BaseModel):
+    image_url: str
+    prompt: str
+
+
 class TrendRequest(BaseModel):
     hashtag: str
     industry: str
     tone: str
 
-# --- Utility Functions ---
+class TemplateRequest(BaseModel):
+    business_name: str
+    industry: str
+    target_audience: str
+    goal: str
+    tone: str
+    hashtag: str
+
+class TemplateInput(BaseModel):
+    template_text: str
+
+def encode_jwt_token(ak, sk):
+    headers = {"alg": "HS256", "typ": "JWT"}
+    payload = {
+        "iss": ak,
+        "exp": int(time.time()) + 1800,
+        "nbf": int(time.time()) - 5
+    }
+    return jwt.encode(payload, sk, algorithm="HS256", headers=headers)
+
+KLING_TOKEN = encode_jwt_token(KLING_AK, KLING_SK)
+
 def safe_parse_json(raw: str):
     try:
         return json.loads(raw)
@@ -36,7 +65,6 @@ def safe_parse_json(raw: str):
             "visualTips": "Use good lighting and engaging visuals"
         }
 
-# --- Instagram Handler ---
 @app.post("/instagram")
 def instagram_trends(req: TrendRequest):
     hashtag = re.sub(r'\W+', '', req.hashtag)
@@ -68,14 +96,14 @@ def instagram_trends(req: TrendRequest):
         }}
         """
 
-        response = openai.chat.completions.create(
+        response = client.chat.completions.create(
             model="gpt-4",
             messages=[
-                {"role": "system", "content": "Return valid JSON only."},
+                {"role": "system", "content": "You are a marketing expert."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.7,
-            max_tokens=200
+            max_tokens=1000,
+            temperature=0.7
         )
         gpt = safe_parse_json(response.choices[0].message.content.strip())
 
@@ -97,15 +125,11 @@ def instagram_trends(req: TrendRequest):
                 "Include a CTA or hashtag"
             ]
         }
-
         results.append(trend)
-
         if len(results) >= 10:
             break
-
     return {"data": results}
 
-# --- TikTok Handler ---
 @app.post("/tiktok")
 def tiktok_trends(req: TrendRequest):
     hashtag = re.sub(r'\W+', '', req.hashtag)
@@ -137,7 +161,7 @@ def tiktok_trends(req: TrendRequest):
         }}
         """
 
-        response = openai.chat.completions.create(
+        response = client.chat.completions.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "Return valid JSON only."},
@@ -166,13 +190,130 @@ def tiktok_trends(req: TrendRequest):
                 "Include a CTA at the end"
             ]
         }
-
         results.append(trend)
-
         if len(results) >= 10:
             break
-
     return {"data": results}
 
-print("🔐 Используемый APIFY_TOKEN:", APIFY_TOKEN)
+@app.post("/generate-template")
+def generate_video_template(data: TemplateRequest):
+    def fetch_instagram_trends(hashtag):
+        client_apify = ApifyClient(APIFY_TOKEN)
+        run = client_apify.actor("apify/instagram-hashtag-scraper").call(
+            run_input={"hashtags": [hashtag], "resultsLimit": 10, "resultsType": "posts"}
+        )
+        return [(item.get("caption", ""), item.get("likesCount", 0)) for item in client_apify.dataset(run["defaultDatasetId"]).iterate_items()][:5]
 
+
+    def fetch_tiktok_trends(hashtag):
+        client_apify = ApifyClient(APIFY_TOKEN)
+        run = client_apify.actor("clockworks/tiktok-scraper").call(
+            run_input={"hashtag": hashtag, "numberOfPosts": 10}
+        )
+        return [(item.get("desc", "") or item.get("text", ""), item.get("stats", {}).get("diggCount", 0)) for item in client_apify.dataset(run["defaultDatasetId"]).iterate_items()][:5]
+
+    insta_trends = fetch_instagram_trends(data.hashtag)
+    tiktok_trends = fetch_tiktok_trends(data.hashtag)
+
+    insta_text = "\n".join([f"- {cap} (likes: {like})" for cap, like in insta_trends])
+    tiktok_text = "\n".join([f"- {desc} (likes: {like})" for desc, like in tiktok_trends])
+
+    prompt = f'''
+Business: "{data.business_name}" in the "{data.industry}" industry.
+Target audience: {data.target_audience}
+Marketing goal: {data.goal}
+Brand tone: {data.tone}
+
+Here are popular Instagram posts:
+{insta_text}
+
+Here are trending TikTok videos:
+{tiktok_text}
+
+Now:
+1. Suggest 1 original TikTok/Instagram video or post idea tailored for this business.
+2. Create a reusable video template for one idea.
+
+Only return the final video template, and make sure it is concise and suitable for a maximum video duration of 10 seconds.
+'''
+
+
+    response = client.chat.completions.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": "You are a marketing expert."},
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=1000,
+        temperature=0.7
+    )
+    return {"template_text": response.choices[0].message.content}
+
+@app.post("/generate-video")
+def generate_video_from_template(data: TemplateInput):
+    headers = {
+        "Authorization": f"Bearer {KLING_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "prompt": data.template_text,
+        "duration": 10,
+        "ratio": "9:16"
+    }
+    response = requests.post("https://api.klingai.com/v1/videos/text2video", headers=headers, json=payload)
+    if response.status_code != 200:
+        return {"error": "Video generation failed", "details": response.text}
+
+    task_id = response.json()['data']['task_id']
+    status_url = f"https://api.klingai.com/v1/videos/text2video/{task_id}"
+
+    while True:
+        status_resp = requests.get(status_url, headers=headers)
+        status_data = status_resp.json().get('data', {})
+        status = status_data.get('task_status')
+
+        if status == 'succeed':
+            video_url = status_data.get('task_result', {}).get('videos', [{}])[0].get('url')
+            return {"video_url": video_url}
+        elif status == 'failed':
+            return {"error": "Video task failed"}
+
+        time.sleep(5)
+
+
+
+@app.post("/generate-image-video")
+def generate_video_from_image(data: Image2VideoRequest):
+    headers = {
+        "Authorization": f"Bearer {KLING_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "model_name": "kling-v1",
+        "mode": "pro",
+        "duration": "5",
+        "image": data.image_url,
+        "prompt": data.prompt,
+        "cfg_scale": 0.5
+    }
+
+    response = requests.post("https://api.klingai.com/v1/videos/image2video", headers=headers, json=payload)
+
+    if response.status_code != 200:
+        return {"error": "Failed to create video task", "details": response.text}
+
+    task_id = response.json()["data"]["task_id"]
+    status_url = f"https://api.klingai.com/v1/videos/image2video/{task_id}"
+
+    while True:
+        status_resp = requests.get(status_url, headers=headers)
+        status_data = status_resp.json().get('data', {})
+        status = status_data.get('task_status')
+
+        if status == 'succeed':
+            video_url = status_data.get('task_result', {}).get('videos', [{}])[0].get('url')
+            return {"video_url": video_url}
+        elif status == 'failed':
+            return {"error": "Video generation task failed"}
+        time.sleep(5)

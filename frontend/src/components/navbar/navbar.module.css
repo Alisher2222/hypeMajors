@@ -3,20 +3,60 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: relative;
+  z-index: 1000;
+  background-color: white;
 }
 
 .logo {
   color: #0d9488;
 }
 
+/* 🖥️ Desktop: всегда показываем */
 .links {
   display: flex;
   align-items: center;
   gap: 1.5rem;
 }
 
+.hamburger {
+  display: none;
+  font-size: 2rem;
+  cursor: pointer;
+  z-index: 1100;
+}
+
+/* 📱 Mobile override */
 @media (max-width: 768px) {
+  .hamburger {
+    display: block;
+  }
+
+  /* Скрываем обычные ссылки */
   .links {
     display: none;
   }
+
+  /* Показываем меню, если бургер активен */
+  .show {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 70px;
+    right: 1rem;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 1rem;
+    z-index: 1050;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+  }
+}
+
+.mainButton {
+  background-color: #0d9488;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  color: white;
+  text-decoration: none;
 }

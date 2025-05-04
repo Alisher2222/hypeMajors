@@ -6,12 +6,14 @@ import authReducer from "./auth.slice";
 import businessReducer from "./businessForm.slice";
 import trendReducer from "./trend.slice";
 import notificationReducer from "./notification.slice";
+import videoReducer from "./video.slice";
 
 const appReducer = combineReducers({
   auth: authReducer,
   businessForm: businessReducer,
   trends: trendReducer,
   notification: notificationReducer,
+  video: videoReducer,
 });
 
 const rootReducer = (state, action) => {

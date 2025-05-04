@@ -8,6 +8,7 @@ import TrendPage from "./pages/trendPage/trendPage";
 import SuggestionPage from "./pages/suggestionsPage/suggestionsPage";
 import Profile from "./pages/profile/profile";
 import ProgressPage from "./pages/ProgressPage/ProgressPage";
+import VideoTemplateGenerator from "./pages/videoTemplateGenerator/videoTemplateGenerator";
 
 export default function App() {
   return (
@@ -53,6 +54,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <ProgressPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/videoGenerate"
+          element={
+            <ProtectedRoute>
+              <VideoTemplateGenerator />
             </ProtectedRoute>
           }
         />

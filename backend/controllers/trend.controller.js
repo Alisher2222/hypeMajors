@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://127.0.0.1:8000";
+const FASTAPI_BASE_URL =
+  process.env.FASTAPI_BASE_URL || "http://127.0.0.1:8000";
 const TIMEOUT = 120000; // 2 минуты
 
 const buildPayload = (req) => {
@@ -15,9 +16,13 @@ export const getInstagramTrends = async (req, res) => {
   try {
     const payload = buildPayload(req);
 
-    const response = await axios.post(`${API_BASE_URL}/instagram`, payload, {
-      timeout: TIMEOUT,
-    });
+    const response = await axios.post(
+      `${FASTAPI_BASE_URL}/instagram`,
+      payload,
+      {
+        timeout: TIMEOUT,
+      }
+    );
 
     res.status(200).json({ trends: response.data.data });
   } catch (err) {
@@ -30,7 +35,7 @@ export const getTiktokTrends = async (req, res) => {
   try {
     const payload = buildPayload(req);
 
-    const response = await axios.post(`${API_BASE_URL}/tiktok`, payload, {
+    const response = await axios.post(`${FASTAPI_BASE_URL}/tiktok`, payload, {
       timeout: TIMEOUT,
     });
 
