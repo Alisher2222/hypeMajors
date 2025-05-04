@@ -9,12 +9,17 @@ const BusinessForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [formData, setFormData] = useState({
+    
     businessName: "",
+    
     industry: "",
     instagramHashtag: "",
     targetAudience: "",
     marketingGoal: "",
     brandTone: "",
+    instagramUsername: "",
+tiktokUsername: ""
+
   });
 
   const handleChange = (e) => {
@@ -97,6 +102,24 @@ const BusinessForm = () => {
             onChange={handleChange}
             className={styles.input}
           />
+          <input
+  type="text"
+  name="instagramUsername"
+  placeholder="Instagram username (without @)"
+  value={formData.instagramUsername}
+  onChange={handleChange}
+  className={styles.input}
+/>
+
+<input
+  type="text"
+  name="tiktokUsername"
+  placeholder="TikTok username (without @)"
+  value={formData.tiktokUsername}
+  onChange={handleChange}
+  className={styles.input}
+/>
+
           <button type="submit" className="mainButton">
             Continue
           </button>

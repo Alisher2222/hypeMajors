@@ -15,6 +15,7 @@ export const analyzeInstagram = async (req, res) => {
         headers: { "Content-Type": "application/json" },
       }
     );
+    console.log("Using APIFY_TOKEN:", process.env.APIFY_TOKEN);
 
     const data = response.data;
     const posts = data[0]?.latestPosts?.slice(0, 10).reverse() || [];

@@ -12,7 +12,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// ========== Fetching Instagram Data ==========
+// ====== Fetch Functions ======
 async function fetchInstagramData(username, setChartData, setAnalysis, setError) {
   try {
     const response = await fetch("http://localhost:5000/api/instagram/analyze", {
@@ -29,12 +29,13 @@ async function fetchInstagramData(username, setChartData, setAnalysis, setError)
     setError("Failed to load Instagram data.");
   }
 }
+
 async function fetchTikTokData(username, setChartData, setError) {
   try {
     const response = await fetch("http://localhost:5000/api/tiktok/analyze", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username }), // ✅ this must NOT be undefined
+      body: JSON.stringify({ username }),
     });
 
     const { chartData } = await response.json();
@@ -45,8 +46,7 @@ async function fetchTikTokData(username, setChartData, setError) {
   }
 }
 
-
-// ========== Chart Component ==========
+// ====== Chart Components ======
 function InstagramChart({ username, data }) {
   if (!data.length) return null;
 
@@ -74,7 +74,6 @@ function InstagramChart({ username, data }) {
 function TikTokChart({ username, data }) {
   if (!Array.isArray(data) || data.length === 0) return null;
 
-
   return (
     <div className={styles.card}>
       <div className={styles.cardHeader}>
@@ -96,7 +95,7 @@ function TikTokChart({ username, data }) {
   );
 }
 
-// ========== Analysis Summary Card ==========
+// ====== Instagram Analysis Summary ======
 function AnalysisCard({ analysis }) {
   if (!analysis) return null;
 
@@ -110,11 +109,11 @@ function AnalysisCard({ analysis }) {
   );
 }
 
-// ========== Main Analytics Component ==========
+// ====== Instagram Analytics ======
 function InstagramAnalytics() {
+  const [username, setUsername] = useState("");
   const [chartData, setChartData] = useState([]);
   const [analysis, setAnalysis] = useState(null);
-  const [instagramUrl, setInstagramUrl] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showChart, setShowChart] = useState(false);
   const [error, setError] = useState("");
@@ -123,18 +122,13 @@ function InstagramAnalytics() {
     e.preventDefault();
     setError("");
 
-    if (!instagramUrl.startsWith("https://www.instagram.com/")) {
-      setError("URL must begin with https://www.instagram.com/");
+    if (!username.trim()) {
+      setError("Please enter an Instagram username");
       return;
     }
 
     setIsAnalyzing(true);
-    fetchInstagramData(
-      instagramUrl.split("/").filter(Boolean).pop(),
-      setChartData,
-      setAnalysis,
-      setError
-    );
+    fetchInstagramData(username.trim(), setChartData, setAnalysis, setError);
     setTimeout(() => {
       setIsAnalyzing(false);
       setShowChart(true);
@@ -149,16 +143,16 @@ function InstagramAnalytics() {
             <Instagram className={styles.icon} /> Track your Instagram progress
           </h2>
           <p className={styles.description}>
-            Enter your Instagram profile URL to analyze your growth and engagement metrics
+            Enter your Instagram username to analyze your growth and engagement metrics
           </p>
         </div>
         <div className={styles.cardContent}>
           <form onSubmit={handleSubmit} className={styles.form}>
             <input
               type="text"
-              placeholder="https://www.instagram.com/yourusername"
-              value={instagramUrl}
-              onChange={(e) => setInstagramUrl(e.target.value)}
+              placeholder="yourusername"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className={styles.input}
             />
             <button
@@ -175,10 +169,7 @@ function InstagramAnalytics() {
 
       {showChart && (
         <>
-          <InstagramChart
-            username={instagramUrl.split("/").filter(Boolean).pop() || ""}
-            data={chartData}
-          />
+          <InstagramChart username={username} data={chartData} />
           <AnalysisCard analysis={analysis} />
         </>
       )}
@@ -186,8 +177,9 @@ function InstagramAnalytics() {
   );
 }
 
+// ====== TikTok Analytics ======
 function TikTokAnalytics() {
-  const [tiktokUrl, setTikTokUrl] = useState("");
+  const [username, setUsername] = useState("");
   const [chartData, setChartData] = useState([]);
   const [showChart, setShowChart] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -197,19 +189,16 @@ function TikTokAnalytics() {
     e.preventDefault();
     setError("");
 
-    if (!tiktokUrl.startsWith("https://www.tiktok.com/@")) {
-      setError("URL must begin with https://www.tiktok.com/@");
+    if (!username.trim()) {
+      setError("Please enter a TikTok username");
       return;
     }
-    console.log("TikTok username:", tiktokUrl.split("/").filter(Boolean).pop().replace("@", ""));
+
+    const cleanUsername = username.replace("@", "").trim();
+    console.log("TikTok username:", cleanUsername);
 
     setIsAnalyzing(true);
-    fetchTikTokData(
-      tiktokUrl.split("/").filter(Boolean).pop().replace("@", ""),
-      setChartData,
-      setError
-    );
-
+    fetchTikTokData(cleanUsername, setChartData, setError);
     setTimeout(() => {
       setIsAnalyzing(false);
       setShowChart(true);
@@ -222,16 +211,16 @@ function TikTokAnalytics() {
         <div className={styles.cardHeader}>
           <h2 className={styles.title}>📱 TikTok Analyzer</h2>
           <p className={styles.description}>
-            Enter TikTok profile URL to see the latest 10 video likes
+            Enter your TikTok username to see the latest 10 video likes
           </p>
         </div>
         <div className={styles.cardContent}>
           <form onSubmit={handleSubmit} className={styles.form}>
             <input
               type="text"
-              placeholder="https://www.tiktok.com/@username"
-              value={tiktokUrl}
-              onChange={(e) => setTikTokUrl(e.target.value)}
+              placeholder="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className={styles.input}
             />
             <button
@@ -246,26 +235,20 @@ function TikTokAnalytics() {
         </div>
       </div>
 
-      {showChart && (
-        <TikTokChart
-          username={tiktokUrl.split("/").filter(Boolean).pop().replace("@", "")   || ""}
-          data={chartData}
-        />
-      )}
+      {showChart && <TikTokChart username={username} data={chartData} />}
     </div>
   );
 }
 
-// ========== Page Wrapper ==========
+// ====== Main Export ======
 export default function ProgressPage() {
   return (
     <>
-  <Navbar />
-  <div className={styles.container}>
-    <InstagramAnalytics />
-    <TikTokAnalytics />
-  </div>
-</>
-
+      <Navbar />
+      <div className={styles.container}>
+        <InstagramAnalytics />
+        <TikTokAnalytics />
+      </div>
+    </>
   );
 }

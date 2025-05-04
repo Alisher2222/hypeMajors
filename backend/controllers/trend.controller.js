@@ -22,6 +22,7 @@ export const getInstagramTrends = async (req, res) => {
     res.status(200).json({ trends: response.data.data });
   } catch (err) {
     console.error("❌ Error fetching Instagram trends:", err.message);
+    console.log("Using APIFY_TOKEN:", process.env.APIFY_TOKEN);
     res.status(500).json({ error: "Failed to get Instagram trends" });
   }
 };
