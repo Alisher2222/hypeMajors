@@ -12,61 +12,42 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// ========== Компонент: InstagramChart ==========
-const generateMockData = (days) => {
-  const data = [];
-  let followers = 1000 + Math.floor(Math.random() * 500);
-  let engagement = 50 + Math.floor(Math.random() * 30);
-
-  for (let i = 0; i < days; i++) {
-    followers += Math.floor(Math.random() * 50) - 10;
-    engagement += Math.floor(Math.random() * 10) - 4;
-    data.push({
-      day: `Day ${i + 1}`,
-      followers,
-      engagement,
-      reach: Math.floor(followers * (1.5 + Math.random())),
-      impressions: Math.floor(followers * (2.5 + Math.random())),
+// ========== Fetching Instagram Data ==========
+async function fetchInstagramData(username, setChartData, setAnalysis, setError) {
+  try {
+    const response = await fetch("http://localhost:5000/api/instagram/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username }),
     });
+
+    const { chartData, analysis } = await response.json();
+    setChartData(chartData);
+    setAnalysis(analysis);
+  } catch (err) {
+    console.error(err);
+    setError("Failed to load Instagram data.");
   }
+}
 
-  return data;
-};
+// ========== Chart Component ==========
+function InstagramChart({ username, data }) {
+  if (!data.length) return null;
 
-const mockData = generateMockData(30);
-
-function InstagramChart({ username }) {
   return (
     <div className={styles.card}>
       <div className={styles.cardHeader}>
-        <h3>Instagram Analytics for @{username}</h3>
-        <p>Track your growth and engagement metrics over the last 30 days</p>
-      </div>
-      <div className={styles.tabs}>
-        <button className={styles.tab}>Followers</button>
+        <h3>Instagram Likes for @{username}</h3>
+        <p>Based on the latest 10 posts</p>
       </div>
       <div className={styles.chartWrapper}>
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart
-            data={mockData}
-            margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis
-              dataKey="day"
-              tick={{ fontSize: 12 }}
-              tickFormatter={(v) => v.replace("Day ", "")}
-            />
+          <LineChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
             <YAxis />
             <Tooltip />
-            <Line
-              type="monotone"
-              dataKey="followers"
-              stroke="#0d9488"
-              strokeWidth={2}
-              dot={{ r: 3 }}
-              activeDot={{ r: 5 }}
-            />
+            <Line type="monotone" dataKey="likes" stroke="#0d9488" />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -74,8 +55,24 @@ function InstagramChart({ username }) {
   );
 }
 
-// ========== Компонент: InstagramAnalytics ==========
+// ========== Analysis Summary Card ==========
+function AnalysisCard({ analysis }) {
+  if (!analysis) return null;
+
+  return (
+    <div className={styles.card}>
+      <h3 className={styles.cardHeader}>Trend Analysis</h3>
+      <p>📊 Average Likes: <strong>{analysis.averageLikes}</strong></p>
+      <p>🔥 Best Post: <a href={analysis.bestPostUrl} target="_blank" rel="noopener noreferrer">{analysis.bestPostUrl}</a> ({analysis.bestPostLikes} likes)</p>
+      <p>📈 Trend Summary: {analysis.trendSummary}</p>
+    </div>
+  );
+}
+
+// ========== Main Analytics Component ==========
 function InstagramAnalytics() {
+  const [chartData, setChartData] = useState([]);
+  const [analysis, setAnalysis] = useState(null);
   const [instagramUrl, setInstagramUrl] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showChart, setShowChart] = useState(false);
@@ -91,10 +88,16 @@ function InstagramAnalytics() {
     }
 
     setIsAnalyzing(true);
+    fetchInstagramData(
+      instagramUrl.split("/").filter(Boolean).pop(),
+      setChartData,
+      setAnalysis,
+      setError
+    );
     setTimeout(() => {
       setIsAnalyzing(false);
       setShowChart(true);
-    }, 1500);
+    }, 2000);
   };
 
   return (
@@ -105,8 +108,7 @@ function InstagramAnalytics() {
             <Instagram className={styles.icon} /> Track your Instagram progress
           </h2>
           <p className={styles.description}>
-            Enter your Instagram profile URL to analyze your growth and
-            engagement metrics
+            Enter your Instagram profile URL to analyze your growth and engagement metrics
           </p>
         </div>
         <div className={styles.cardContent}>
@@ -126,21 +128,24 @@ function InstagramAnalytics() {
               {isAnalyzing ? "Analyzing..." : "Analyze"}
             </button>
           </form>
-
           {error && <div className={styles.error}>{error}</div>}
         </div>
       </div>
 
       {showChart && (
-        <InstagramChart
-          username={instagramUrl.split("/").filter(Boolean).pop() || ""}
-        />
+        <>
+          <InstagramChart
+            username={instagramUrl.split("/").filter(Boolean).pop() || ""}
+            data={chartData}
+          />
+          <AnalysisCard analysis={analysis} />
+        </>
       )}
     </div>
   );
 }
 
-// ========== Компонент страницы ==========
+// ========== Page Wrapper ==========
 export default function ProgressPage() {
   return (
     <>

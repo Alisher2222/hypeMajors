@@ -108,9 +108,8 @@ export default function Register() {
             <button
               type="submit"
               className={styles.submitButton}
-              disabled={loading}
             >
-              {loading ? "Creating Account..." : "Create Account"}
+              Create Account
             </button>
           </form>
 
