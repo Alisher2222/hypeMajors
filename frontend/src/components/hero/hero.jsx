@@ -13,7 +13,9 @@ export default function Hero() {
             for Instagram and TikTok in seconds.
           </p>
           <div className={styles.heroButtons}>
-            <Link className="mainButton">Get Started →</Link>
+            <Link className="mainButton" to="/register">
+              Get Started →
+            </Link>
             <a className="secondaryButton" href="#howitWorks">
               Learn More
             </a>

@@ -36,7 +36,7 @@ const BusinessForm = () => {
       return;
     }
     dispatch(submitBusinessForm(formData));
-    navigate("/");
+    navigate("/suggestionsPage");
   };
 
   return (
