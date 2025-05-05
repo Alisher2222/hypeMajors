@@ -62,7 +62,7 @@ export default function Navbar() {
         ) : (
           <>
             <Link
-              to="/progress"
+              to="/progressPage"
               className="link"
               onClick={() => setIsMobileMenuOpen(false)}
             >

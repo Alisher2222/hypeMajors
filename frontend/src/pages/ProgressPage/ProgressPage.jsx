@@ -64,10 +64,16 @@ function AnalysisCard({ analysis }) {
   return (
     <div className={styles.card}>
       <h3 className={styles.cardHeader}>Trend Analysis</h3>
-      <p>📊 Average Likes: <strong>{analysis.averageLikes}</strong></p>
+      <p>
+        📊 Average Likes: <strong>{analysis.averageLikes}</strong>
+      </p>
       <p>
         🔥 Best Post:{" "}
-        <a href={analysis.bestPostUrl} target="_blank" rel="noopener noreferrer">
+        <a
+          href={analysis.bestPostUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           {analysis.bestPostUrl}
         </a>{" "}
         ({analysis.bestPostLikes} likes)
@@ -94,10 +100,10 @@ export default function ProgressPage() {
         console.log("user.id:", user.id); // 👈 this should be just a number like 8
 
         const res = await fetch(`http://localhost:5000/business/${user.id}`, {
-  headers: {
-    Authorization: `Bearer ${user.token}`,
-  },
-});
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        });
 
         const data = await res.json();
         const business = data.business;
@@ -106,9 +112,8 @@ export default function ProgressPage() {
         const ttUser = business.tiktok_username?.trim();
 
         setInstagramUsername(business.instagram_username);
-setTikTokUsername(business.tiktok_username);
-setError(""); // ✅ clear error message
-
+        setTikTokUsername(business.tiktok_username);
+        setError(""); // ✅ clear error message
 
         await fetchInstagramData(igUser);
         await fetchTikTokData(ttUser);
@@ -125,11 +130,14 @@ setError(""); // ✅ clear error message
 
   async function fetchInstagramData(username) {
     try {
-      const response = await fetch("http://localhost:5000/api/instagram/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username }),
-      });
+      const response = await fetch(
+        "http://localhost:5000/api/instagram/analyze",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username }),
+        }
+      );
       const { chartData, analysis } = await response.json();
       setIgData(chartData);
       setIgAnalysis(analysis);
@@ -164,7 +172,10 @@ setError(""); // ✅ clear error message
         <AnalysisCard analysis={igAnalysis} />
         <TikTokChart username={tiktokUsername} data={ttData} />
         {showContinue && (
-          <button className={styles.button} onClick={() => navigate("/suggestionsPage")}>
+          <button
+            className={styles.button}
+            onClick={() => navigate("/suggestionsPage")}
+          >
             Continue to Suggestions →
           </button>
         )}

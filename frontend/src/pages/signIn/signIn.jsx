@@ -31,7 +31,7 @@ export default function SignIn() {
       setTimeout(() => {
         dispatch(fetchUserBusinesses({ userId }));
         navigate("/");
-      }, 300);
+      }, 1000);
     } catch (err) {
       alert(err?.message || "Login failed");
     }
