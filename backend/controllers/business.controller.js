@@ -10,8 +10,9 @@ export const createBusiness = async (req, res) => {
       targetAudience: target_audience,
       marketingGoal: marketing_goal,
       brandTone: brand_tone,
-      instagramUsername: instagram_username,  // ✅ new
-      tiktokUsername: tiktok_username         // ✅ new
+      instagramUsername: instagram_username,
+      tiktokUsername: tiktok_username,
+      location,
     } = req.body;
 
     if (
@@ -20,7 +21,8 @@ export const createBusiness = async (req, res) => {
       !instagram_hashtag ||
       !target_audience ||
       !marketing_goal ||
-      !brand_tone
+      !brand_tone ||
+      !location
     ) {
       return res.status(400).json({ error: "Missing required fields" });
     }
@@ -40,8 +42,8 @@ export const createBusiness = async (req, res) => {
       `INSERT INTO businesses (
         business_name, industry, instagram_hashtag,
         target_audience, marketing_goal, brand_tone,
-        instagram_username, tiktok_username, user_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        instagram_username, tiktok_username, user_id, location
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         business_name,
         industry,
@@ -51,7 +53,8 @@ export const createBusiness = async (req, res) => {
         brand_tone,
         instagram_username,
         tiktok_username,
-        user_id
+        user_id,
+        location,
       ]
     );
 

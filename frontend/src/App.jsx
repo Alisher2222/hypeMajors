@@ -49,19 +49,20 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/progress"
-          element={
-            <ProtectedRoute>
-              <ProgressPage />
-            </ProtectedRoute>
-          }
-        />
+
         <Route
           path="/videoGenerate"
           element={
             <ProtectedRoute>
               <VideoTemplateGenerator />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/progressPage"
+          element={
+            <ProtectedRoute>
+              <ProgressPage />
             </ProtectedRoute>
           }
         />

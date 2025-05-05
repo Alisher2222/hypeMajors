@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import API from "../api";
 
-// Thunks
 export const submitBusinessForm = createAsyncThunk(
   "business/submit",
   async (formData, { rejectWithValue, getState }) => {
@@ -76,7 +75,6 @@ export const deleteBusiness = createAsyncThunk(
   }
 );
 
-// Slice
 const businessSlice = createSlice({
   name: "business",
   initialState: {
@@ -86,10 +84,14 @@ const businessSlice = createSlice({
     targetAudience: "",
     marketingGoal: "",
     brandTone: "",
+    instagramUsername: "",
+    tiktokUsername: "",
+    location: "",
     businesses: [],
     status: "idle",
     error: null,
   },
+
   reducers: {
     setFormData(state, action) {
       const { name, value } = action.payload;
@@ -102,6 +104,9 @@ const businessSlice = createSlice({
       state.targetAudience = "";
       state.marketingGoal = "";
       state.brandTone = "";
+      state.instagramUsername = "";
+      state.tiktokUsername = "";
+      state.location = "";
       state.status = "idle";
       state.error = null;
     },
@@ -121,6 +126,9 @@ const businessSlice = createSlice({
         state.marketingGoal = business.marketing_goal;
         state.brandTone = business.brand_tone;
         state.businesses.push(business);
+        state.instagramUsername = business.instagram_username;
+        state.tiktokUsername = business.tiktok_username;
+        state.location = business.location;
       })
       .addCase(submitBusinessForm.rejected, (state, action) => {
         state.status = "failed";
@@ -139,6 +147,10 @@ const businessSlice = createSlice({
         state.targetAudience = business.target_audience;
         state.marketingGoal = business.marketing_goal;
         state.brandTone = business.brand_tone;
+        state.instagramUsername = business.instagram_username;
+        state.tiktokUsername = business.tiktok_username;
+        state.location = business.location;
+
         state.businesses.push(business);
       })
       .addCase(fetchUserBusinesses.rejected, (state, action) => {

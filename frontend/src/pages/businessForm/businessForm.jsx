@@ -9,17 +9,15 @@ const BusinessForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [formData, setFormData] = useState({
-    
     businessName: "",
-    
     industry: "",
     instagramHashtag: "",
     targetAudience: "",
     marketingGoal: "",
     brandTone: "",
     instagramUsername: "",
-tiktokUsername: ""
-
+    tiktokUsername: "",
+    location: "",
   });
 
   const handleChange = (e) => {
@@ -41,9 +39,7 @@ tiktokUsername: ""
       return;
     }
     dispatch(submitBusinessForm(formData));
-    //navigate("/suggestionsPage");
     navigate("/progressPage");
-
   };
 
   return (
@@ -67,7 +63,7 @@ tiktokUsername: ""
           <input
             type="text"
             name="industry"
-            placeholder="e.g., makeup, construction"
+            placeholder="Enter your industry name"
             value={formData.industry}
             onChange={handleChange}
             className={styles.input}
@@ -75,7 +71,7 @@ tiktokUsername: ""
           <input
             type="text"
             name="instagramHashtag"
-            placeholder="# e.g., makeup"
+            placeholder="Enter your hashtag"
             value={formData.instagramHashtag}
             onChange={handleChange}
             className={styles.input}
@@ -83,7 +79,7 @@ tiktokUsername: ""
           <input
             type="text"
             name="targetAudience"
-            placeholder="e.g., Gen Z women"
+            placeholder="Enter your audience"
             value={formData.targetAudience}
             onChange={handleChange}
             className={styles.input}
@@ -91,7 +87,7 @@ tiktokUsername: ""
           <input
             type="text"
             name="marketingGoal"
-            placeholder="e.g., engagement, leads"
+            placeholder="Enter your market goal"
             value={formData.marketingGoal}
             onChange={handleChange}
             className={styles.input}
@@ -99,28 +95,36 @@ tiktokUsername: ""
           <input
             type="text"
             name="brandTone"
-            placeholder="e.g., fun, professional"
+            placeholder="Enter your brand tone, e.g., fun, professional"
             value={formData.brandTone}
             onChange={handleChange}
             className={styles.input}
           />
           <input
-  type="text"
-  name="instagramUsername"
-  placeholder="Instagram username (without @)"
-  value={formData.instagramUsername}
-  onChange={handleChange}
-  className={styles.input}
-/>
+            type="text"
+            name="instagramUsername"
+            placeholder="Instagram username (without @)"
+            value={formData.instagramUsername}
+            onChange={handleChange}
+            className={styles.input}
+          />
 
-<input
-  type="text"
-  name="tiktokUsername"
-  placeholder="TikTok username (without @)"
-  value={formData.tiktokUsername}
-  onChange={handleChange}
-  className={styles.input}
-/>
+          <input
+            type="text"
+            name="tiktokUsername"
+            placeholder="TikTok username (without @)"
+            value={formData.tiktokUsername}
+            onChange={handleChange}
+            className={styles.input}
+          />
+          <input
+            type="text"
+            name="location"
+            placeholder="Enter the location of your business"
+            value={formData.location}
+            onChange={handleChange}
+            className={styles.input}
+          />
 
           <button type="submit" className="mainButton">
             Continue
