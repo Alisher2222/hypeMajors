@@ -1,7 +1,8 @@
+// ✅ Переписанный компонент ProgressPage с выносом стилей в отдельный CSS модуль
+
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import styles from "./ProgressPage.module.css";
 import Navbar from "../../components/navbar/navbar";
 import {
   LineChart,
@@ -12,6 +13,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { TrendingUp } from "lucide-react";
+import styles from "./ProgressPage.module.css";
 
 function InstagramChart({ username, data }) {
   if (!data || !data.length) return null;
@@ -25,10 +28,10 @@ function InstagramChart({ username, data }) {
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
+            <XAxis dataKey="date" className={styles.axisText} />
+            <YAxis className={styles.axisText} />
             <Tooltip />
-            <Line type="monotone" dataKey="likes" stroke="#0d9488" />
+            <Line type="monotone" dataKey="likes" stroke="#0D9488" />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -48,8 +51,8 @@ function TikTokChart({ username, data }) {
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
+            <XAxis dataKey="date" className={styles.axisText} />
+            <YAxis className={styles.axisText} />
             <Tooltip />
             <Line type="monotone" dataKey="likes" stroke="#6366f1" />
           </LineChart>
@@ -63,12 +66,15 @@ function AnalysisCard({ analysis }) {
   if (!analysis) return null;
   return (
     <div className={styles.card}>
-      <h3 className={styles.cardHeader}>Trend Analysis</h3>
+      <div className={styles.trendHeader}>
+        <TrendingUp className={styles.icon} />
+        <h3>Trend Analysis</h3>
+      </div>
       <p>
         📊 Average Likes: <strong>{analysis.averageLikes}</strong>
       </p>
       <p>
-        🔥 Best Post:{" "}
+        🔥 Best Post:
         <a
           href={analysis.bestPostUrl}
           target="_blank"
@@ -97,34 +103,28 @@ export default function ProgressPage() {
   useEffect(() => {
     async function fetchBusinessUsernames() {
       try {
-        console.log("user.id:", user.id); // 👈 this should be just a number like 8
-
         const res = await fetch(`http://localhost:5000/business/${user.id}`, {
           headers: {
             Authorization: `Bearer ${user.token}`,
           },
         });
-
         const data = await res.json();
         const business = data.business;
-
         const igUser = business.instagram_username?.trim();
         const ttUser = business.tiktok_username?.trim();
 
-        setInstagramUsername(business.instagram_username);
-        setTikTokUsername(business.tiktok_username);
-        setError(""); // ✅ clear error message
+        setInstagramUsername(igUser);
+        setTikTokUsername(ttUser);
+        setError("");
 
         await fetchInstagramData(igUser);
         await fetchTikTokData(ttUser);
-
         setShowContinue(true);
       } catch (err) {
         console.error(err);
         setError("Could not load business data.");
       }
     }
-
     fetchBusinessUsernames();
   }, [user.id, navigate]);
 
@@ -166,18 +166,20 @@ export default function ProgressPage() {
     <>
       <Navbar />
       <div className={styles.container}>
-        <h2>Analyzing your accounts...</h2>
+        <h2 className={styles.title}>Analyzing your accounts...</h2>
         {error && <div className={styles.error}>{error}</div>}
         <InstagramChart username={instagramUsername} data={igData} />
         <AnalysisCard analysis={igAnalysis} />
         <TikTokChart username={tiktokUsername} data={ttData} />
         {showContinue && (
-          <button
-            className={styles.button}
-            onClick={() => navigate("/suggestionsPage")}
-          >
-            Continue to Suggestions →
-          </button>
+          <div className={styles.buttonWrapper}>
+            <button
+              className={styles.button}
+              onClick={() => navigate("/suggestionsPage")}
+            >
+              Continue to Suggestions →
+            </button>
+          </div>
         )}
       </div>
     </>
