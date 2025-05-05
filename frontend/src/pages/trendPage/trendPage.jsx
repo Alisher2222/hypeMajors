@@ -122,9 +122,9 @@ export default function TrendPage() {
         </div>
 
         <div className={styles.ctaRow}>
-          <button className={styles.saveButton}>
-            <Bookmark size={18} /> Save Trend
-          </button>
+          <Link className={styles.saveButton} to="/videoGenerate">
+            Generate video
+          </Link>
           <button className={styles.shareButton}>
             <Share2 size={18} /> Share
           </button>

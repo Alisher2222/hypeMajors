@@ -13,12 +13,10 @@ from openai import OpenAI
 
 load_dotenv()
 
-APIFY_TOKEN = "apify_api_vWworj0dsklNh13dqW95trg0hygzEf4paSZk"
+APIFY_TOKEN = os.getenv("APIFY_TOKEN")  # ✅ Move token to .env
 OPENAI_KEY = os.getenv("OPENAI_KEY")
 KLING_AK = os.getenv("KLING_AK")
 KLING_SK = os.getenv("KLING_SK")
-
-
 
 client = OpenAI(api_key=OPENAI_KEY)
 app = FastAPI()
@@ -34,6 +32,7 @@ class TrendRequest(BaseModel):
     industry: str
     tone: str
 
+
 class TemplateRequest(BaseModel):
     business_name: str
     industry: str
@@ -42,8 +41,10 @@ class TemplateRequest(BaseModel):
     tone: str
     hashtag: str
 
+
 class TemplateInput(BaseModel):
     template_text: str
+
 
 def encode_jwt_token(ak, sk):
     headers = {"alg": "HS256", "typ": "JWT"}
@@ -54,7 +55,9 @@ def encode_jwt_token(ak, sk):
     }
     return jwt.encode(payload, sk, algorithm="HS256", headers=headers)
 
+
 KLING_TOKEN = encode_jwt_token(KLING_AK, KLING_SK)
+
 
 def safe_parse_json(raw: str):
     try:
@@ -64,6 +67,7 @@ def safe_parse_json(raw: str):
             "suggestedScript": "Use trending sound with visuals",
             "visualTips": "Use good lighting and engaging visuals"
         }
+
 
 @app.post("/instagram")
 def instagram_trends(req: TrendRequest):
@@ -80,7 +84,6 @@ def instagram_trends(req: TrendRequest):
     results = []
     for i, item in enumerate(client_apify.dataset(run["defaultDatasetId"]).iterate_items(), 1):
         caption = item.get("caption", "")
-        likes = item.get("likesCount", 0)
         image = item.get("url", "")
 
         prompt = f"""
@@ -117,8 +120,8 @@ def instagram_trends(req: TrendRequest):
             "difficulty": "Medium",
             "fullDescription": caption,
             "whyItWorks": "The post connects emotionally or visually with the target audience.",
-            "suggestedScript": gpt.get("suggestedScript", "Start with a hook and end with a CTA."),
-            "visualTips": gpt.get("visualTips", "Film in natural light with smooth transitions."),
+            "suggestedScript": gpt.get("suggestedScript"),
+            "visualTips": gpt.get("visualTips"),
             "bestPractices": [
                 "Use trending audio",
                 "Keep it short and vertical",
@@ -130,6 +133,7 @@ def instagram_trends(req: TrendRequest):
             break
     return {"data": results}
 
+
 @app.post("/tiktok")
 def tiktok_trends(req: TrendRequest):
     hashtag = re.sub(r'\W+', '', req.hashtag)
@@ -140,12 +144,11 @@ def tiktok_trends(req: TrendRequest):
         "resultsPerPage": 100,
         "proxyCountryCode": "US"
     }
-    run = client_apify.actor("clockworks/tiktok-scraper").call(run_input=run_input)
+    run = client_apify.actor("apify/tiktok-scraper").call(run_input=run_input)  # ✅ switched from clockworks
 
     results = []
     for i, item in enumerate(client_apify.dataset(run["defaultDatasetId"]).iterate_items(), 1):
         desc = item.get("text", "")
-        likes = item.get("diggCount", 0)
         url = item.get("webVideoUrl", "")
 
         prompt = f"""
@@ -182,8 +185,8 @@ def tiktok_trends(req: TrendRequest):
             "difficulty": "Medium",
             "fullDescription": desc,
             "whyItWorks": "People love practical or visually pleasing content, especially around popular topics.",
-            "suggestedScript": gpt.get("suggestedScript", "Start with a product problem, end with a visual solution."),
-            "visualTips": gpt.get("visualTips", "Use close-ups, good lighting, and clean transitions."),
+            "suggestedScript": gpt.get("suggestedScript"),
+            "visualTips": gpt.get("visualTips"),
             "bestPractices": [
                 "Use trending audio",
                 "Keep video under 30s",
@@ -195,6 +198,7 @@ def tiktok_trends(req: TrendRequest):
             break
     return {"data": results}
 
+
 @app.post("/generate-template")
 def generate_video_template(data: TemplateRequest):
     def fetch_instagram_trends(hashtag):
@@ -204,13 +208,12 @@ def generate_video_template(data: TemplateRequest):
         )
         return [(item.get("caption", ""), item.get("likesCount", 0)) for item in client_apify.dataset(run["defaultDatasetId"]).iterate_items()][:5]
 
-
     def fetch_tiktok_trends(hashtag):
         client_apify = ApifyClient(APIFY_TOKEN)
-        run = client_apify.actor("clockworks/tiktok-scraper").call(
-            run_input={"hashtag": hashtag, "numberOfPosts": 10}
+        run = client_apify.actor("apify/tiktok-scraper").call(
+            run_input={"hashtags": [hashtag], "resultsPerPage": 10, "proxyCountryCode": "US"}
         )
-        return [(item.get("desc", "") or item.get("text", ""), item.get("stats", {}).get("diggCount", 0)) for item in client_apify.dataset(run["defaultDatasetId"]).iterate_items()][:5]
+        return [(item.get("text", ""), item.get("diggCount", 0)) for item in client_apify.dataset(run["defaultDatasetId"]).iterate_items()][:5]
 
     insta_trends = fetch_instagram_trends(data.hashtag)
     tiktok_trends = fetch_tiktok_trends(data.hashtag)
@@ -237,7 +240,6 @@ Now:
 Only return the final video template, and make sure it is concise and suitable for a maximum video duration of 10 seconds.
 '''
 
-
     response = client.chat.completions.create(
         model="gpt-4",
         messages=[
@@ -248,6 +250,7 @@ Only return the final video template, and make sure it is concise and suitable f
         temperature=0.7
     )
     return {"template_text": response.choices[0].message.content}
+
 
 @app.post("/generate-video")
 def generate_video_from_template(data: TemplateInput):
@@ -277,9 +280,7 @@ def generate_video_from_template(data: TemplateInput):
             return {"video_url": video_url}
         elif status == 'failed':
             return {"error": "Video task failed"}
-
         time.sleep(5)
-
 
 
 @app.post("/generate-image-video")

@@ -61,9 +61,6 @@ export default function Navbar() {
           </>
         ) : (
           <>
-            <Link to="/videoGenerate" className="link">
-              Generate Image
-            </Link>
             <Link
               to="/progressPage"
               className="link"
